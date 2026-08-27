@@ -1,0 +1,6 @@
+{
+  "name": "Nothing Clock",
+  "description": "An amoled-black, Nothing(R) styled clock app featuring alarms, world clock, stopwatch, timer, and a landscape dock screen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_background"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="10dp">
+
+    <!-- Far Left: Album Cover Art Box -->
+    <ImageView
+        android:id="@+id/widget_album_art"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/widget_album_art_background"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true" />
+
+    <!-- Center: Live Music Info and Dot Matrix Visualizer -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.0"
+        android:orientation="vertical"
+        android:gravity="center_vertical|start"
+        android:layout_marginEnd="8dp">
+
+        <!-- Programmatically drawn dot matrix music display (Icon & Equalizer only) -->
+        <ImageView
+            android:id="@+id/widget_dot_matrix_image"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:scaleType="fitStart"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent" />
+
+        <!-- Bigger Track Title -->
+        <TextView
+            android:id="@+id/widget_music_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="TAP TO PLAY MUSIC"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever" />
+
+        <!-- Artist Name -->
+        <TextView
+            android:id="@+id/widget_music_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:text="NO ACTIVE SESSION"
+            android:textColor="#888888"
+            android:textSize="9.5sp"
+            android:fontFamily="monospace"
+            android:textAllCaps="true"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever" />
+
+    </LinearLayout>
+
+    <!-- Right Part: Monochromatic Physical-style Control Keys -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_gravity="center_vertical">
+
+        <!-- Previous Button -->
+        <TextView
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/widget_button_secondary"
+            android:text="◀"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Play / Pause Button with start and end margins for separation -->
+        <TextView
+            android:id="@+id/widget_btn_play_pause"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/widget_button_play"
+            android:text="▶"
+            android:textColor="#000000"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Next Button -->
+        <TextView
+            android:id="@+id/widget_btn_next"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/widget_button_secondary"
+            android:text="▶"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+</LinearLayout>

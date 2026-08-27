@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Top Header: Status Indicator + Section Title + Countdown Pill -->
+    <LinearLayout
+        android:id="@+id/widget_header_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Glowing Accent Indicator Dot -->
+        <ImageView
+            android:id="@+id/widget_status_dot"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:src="@drawable/widget_button_pause"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="Alarm Status" />
+
+        <TextView
+            android:id="@+id/widget_section_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="UPCOMING ALARM"
+            android:textColor="#B3FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:fontFamily="monospace"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <!-- Countdown / Time Remaining Pill -->
+        <TextView
+            android:id="@+id/widget_countdown_pill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_pill_background"
+            android:text="IN 7H 30M"
+            android:textColor="#FFFFFF"
+            android:textSize="9sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp" />
+    </LinearLayout>
+
+    <!-- Main Content Area: Active Alarm State -->
+    <LinearLayout
+        android:id="@+id/widget_active_alarm_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+        <!-- Dot Matrix Time Image -->
+        <ImageView
+            android:id="@+id/widget_alarm_dot_matrix"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitStart"
+            android:contentDescription="Upcoming Alarm Time" />
+
+        <!-- Alarm Details Row: Label + Days -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/widget_alarm_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="WAKE UP"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/widget_alarm_days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MON, TUE, WED, THU, FRI"
+                android:textColor="#80FFFFFF"
+                android:textSize="9sp"
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Fallback / Empty State: When No Alarms Are Enabled -->
+    <LinearLayout
+        android:id="@+id/widget_no_alarm_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NO ACTIVE ALARMS"
+            android:textColor="#99FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+ TAP TO CONFIGURE ALARM"
+            android:textColor="@color/widget_accent"
+            android:textSize="10sp"
+            android:fontFamily="monospace"
+            android:layout_marginTop="6dp" />
+    </LinearLayout>
+
+</LinearLayout>
