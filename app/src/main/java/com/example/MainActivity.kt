@@ -4,9 +4,12 @@ import com.example.ui.theme.LocalCustomFont
 
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.media.AudioManager
+import android.view.KeyEvent
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
 import android.os.Bundle
@@ -111,6 +114,60 @@ import androidx.compose.foundation.pager.PagerState
 
 class MainActivity : ComponentActivity() {
     private val viewModel: ClockViewModel by viewModels()
+
+    companion object {
+        var isDockModeActiveState = mutableStateOf(false)
+        var dockVolumeTrigger = mutableStateOf(0L)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (isDockModeActiveState.value) {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            if (audioManager != null) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_VOLUME_UP -> {
+                        audioManager.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC,
+                            AudioManager.ADJUST_RAISE,
+                            0 // flag 0 suppresses default system volume dialog
+                        )
+                        dockVolumeTrigger.value = System.currentTimeMillis()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_VOLUME_DOWN -> {
+                        audioManager.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC,
+                            AudioManager.ADJUST_LOWER,
+                            0 // flag 0 suppresses default system volume dialog
+                        )
+                        dockVolumeTrigger.value = System.currentTimeMillis()
+                        return true
+                    }
+                    KeyEvent.KEYCODE_VOLUME_MUTE -> {
+                        audioManager.adjustStreamVolume(
+                            AudioManager.STREAM_MUSIC,
+                            AudioManager.ADJUST_TOGGLE_MUTE,
+                            0 // flag 0 suppresses default system volume dialog
+                        )
+                        dockVolumeTrigger.value = System.currentTimeMillis()
+                        return true
+                    }
+                }
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (isDockModeActiveState.value) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_VOLUME_UP,
+                KeyEvent.KEYCODE_VOLUME_DOWN,
+                KeyEvent.KEYCODE_VOLUME_MUTE -> return true
+            }
+        }
+        return super.onKeyUp(keyCode, event)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -257,6 +314,10 @@ fun MainClockApp(
             isDockModeActive = true
         }
         lastOrientationWasLandscape = isLandscape
+    }
+    
+    LaunchedEffect(isDockModeActive, currentSection) {
+        MainActivity.isDockModeActiveState.value = isDockModeActive && currentSection == ClockSection.WORLD_CLOCK
     }
     
     // If Dock mode is active and in World Clock section, render the Dock overlay

@@ -34,7 +34,7 @@
             android:textSize="10sp"
             android:textStyle="bold"
             android:letterSpacing="0.1"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/dotmatrix"
             android:maxLines="1"
             android:ellipsize="end" />
 
@@ -48,7 +48,7 @@
             android:textColor="#FFFFFF"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/dotmatrix"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="3dp"
@@ -92,7 +92,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/dotmatrix"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -103,7 +103,7 @@
                 android:text="MON, TUE, WED, THU, FRI"
                 android:textColor="#80FFFFFF"
                 android:textSize="9sp"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/dotmatrix"
                 android:maxLines="1"
                 android:ellipsize="end" />
         </LinearLayout>
@@ -126,7 +126,7 @@
             android:textColor="#99FFFFFF"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/dotmatrix"
             android:letterSpacing="0.05" />
 
         <TextView
@@ -135,7 +135,7 @@
             android:text="+ TAP TO CONFIGURE ALARM"
             android:textColor="@color/widget_accent"
             android:textSize="10sp"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/dotmatrix"
             android:layout_marginTop="6dp" />
     </LinearLayout>
 

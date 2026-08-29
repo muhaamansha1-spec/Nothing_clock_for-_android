@@ -3,17 +3,27 @@ package com.example.ui.screens
 import com.example.ui.theme.LocalCustomFont
 
 
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.media.AudioManager
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.view.WindowManager
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,33 +52,44 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.example.MainActivity
 import com.example.ui.components.DotMatrixString
 import com.example.ui.components.WeatherDotMatrixIcon
 import com.example.data.model.WeatherCondition
 import com.example.data.repository.WeatherRepository
 import com.example.service.MediaPlaybackManager
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 data class AudioTrack(
@@ -160,12 +181,22 @@ fun LandscapeDockScreen(
         }
     }
 
-    // Keep screen awake while in dock mode
+    // Keep screen awake and hide system bars while in dock mode
     DisposableEffect(Unit) {
         val activity = context as? android.app.Activity
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
+        val window = activity?.window
+        if (window != null) {
+            val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+            insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+        }
+        MainActivity.isDockModeActiveState.value = true
+
         onDispose {
             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            MainActivity.isDockModeActiveState.value = false
         }
     }
 
@@ -824,6 +855,214 @@ fun LandscapeDockScreen(
                         )
                     }
                 }
+            }
+        }
+
+        // Custom volume indicator line on the edge of the dock screen
+        DockVolumeIndicator(
+            modifier = Modifier.align(Alignment.CenterEnd)
+        )
+    }
+}
+
+/**
+ * Custom Volume Indicator Line on the edge of the Dock Screen.
+ * Provides a Nothing OS dot-matrix styled volume line on the right edge of the screen,
+ * supporting vertical edge touch gestures and suppressing system volume dialogs.
+ */
+@Composable
+fun DockVolumeIndicator(
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager }
+
+    val maxVolume = remember(audioManager) {
+        audioManager?.getStreamMaxVolume(AudioManager.STREAM_MUSIC) ?: 15
+    }
+    val minVolume = remember(audioManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            audioManager?.getStreamMinVolume(AudioManager.STREAM_MUSIC) ?: 0
+        } else {
+            0
+        }
+    }
+
+    var currentVolume by remember {
+        mutableIntStateOf(audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0)
+    }
+    var isVisible by remember { mutableStateOf(false) }
+    var lastInteractionTime by remember { mutableLongStateOf(0L) }
+
+    // Synchronize with hardware volume keys captured in MainActivity
+    val dockVolumeTrigger = MainActivity.dockVolumeTrigger.value
+    LaunchedEffect(dockVolumeTrigger) {
+        if (dockVolumeTrigger > 0L) {
+            currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: currentVolume
+            isVisible = true
+            lastInteractionTime = System.currentTimeMillis()
+        }
+    }
+
+    // Register receiver to observe external volume changes
+    DisposableEffect(context) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(c: Context?, intent: Intent?) {
+                if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
+                    val streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1)
+                    if (streamType == AudioManager.STREAM_MUSIC || streamType == -1) {
+                        val newVol = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1)
+                        if (newVol >= 0) {
+                            currentVolume = newVol
+                        } else {
+                            currentVolume = audioManager?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: currentVolume
+                        }
+                        isVisible = true
+                        lastInteractionTime = System.currentTimeMillis()
+                    }
+                }
+            }
+        }
+        val filter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
+        try {
+            context.registerReceiver(receiver, filter)
+        } catch (_: Throwable) {}
+        onDispose {
+            try {
+                context.unregisterReceiver(receiver)
+            } catch (_: Throwable) {}
+        }
+    }
+
+    // Auto-hide indicator after 2.5 seconds of inactivity
+    LaunchedEffect(isVisible, lastInteractionTime) {
+        if (isVisible) {
+            delay(2500L)
+            isVisible = false
+        }
+    }
+
+    val volumeFraction = if (maxVolume > minVolume) {
+        ((currentVolume - minVolume).toFloat() / (maxVolume - minVolume).toFloat()).coerceIn(0f, 1f)
+    } else 0f
+
+    val animatedFraction by animateFloatAsState(
+        targetValue = volumeFraction,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow),
+        label = "dock_volume_fill"
+    )
+
+    val alphaAnim by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0.12f, // Faint ambient line on edge, bright when active
+        animationSpec = tween(durationMillis = 280),
+        label = "dock_volume_alpha"
+    )
+
+    val slideOffset by animateDpAsState(
+        targetValue = if (isVisible) 0.dp else 4.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "dock_volume_slide"
+    )
+
+    val barHeight = 160.dp
+    val barWidth = if (isVisible) 5.dp else 3.dp
+
+    Box(
+        modifier = modifier
+            .padding(end = 6.dp)
+            .graphicsLayer {
+                alpha = alphaAnim
+                translationX = slideOffset.toPx()
+            }
+            .pointerInput(Unit) {
+                detectVerticalDragGestures(
+                    onDragStart = {
+                        isVisible = true
+                        lastInteractionTime = System.currentTimeMillis()
+                        try {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        } catch (_: Throwable) {}
+                    },
+                    onDragEnd = {
+                        lastInteractionTime = System.currentTimeMillis()
+                    },
+                    onDragCancel = {
+                        lastInteractionTime = System.currentTimeMillis()
+                    },
+                    onVerticalDrag = { change, dragAmount ->
+                        change.consume()
+                        isVisible = true
+                        lastInteractionTime = System.currentTimeMillis()
+
+                        val totalPx = barHeight.toPx()
+                        val stepRange = (maxVolume - minVolume).toFloat()
+                        val delta = -dragAmount / totalPx
+                        val currentFraction = if (maxVolume > minVolume) (currentVolume - minVolume) / stepRange else 0f
+                        val targetFraction = (currentFraction + delta).coerceIn(0f, 1f)
+                        val targetVol = (minVolume + (targetFraction * stepRange)).roundToInt().coerceIn(minVolume, maxVolume)
+
+                        if (targetVol != currentVolume) {
+                            currentVolume = targetVol
+                            audioManager?.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
+                            try {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            } catch (_: Throwable) {}
+                        }
+                    }
+                )
+            },
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Floating Pill Badge when active showing volume percentage or MUTED
+            AnimatedVisibility(
+                visible = isVisible,
+                enter = fadeIn() + slideInHorizontally { it / 2 },
+                exit = fadeOut() + slideOutHorizontally { it / 2 }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(12.dp))
+                        .background(Color(0xD9141418))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    val isMuted = currentVolume <= minVolume
+                    val volPercentage = (volumeFraction * 100).roundToInt()
+                    Text(
+                        text = if (isMuted) "MUTED" else "VOL $volPercentage%",
+                        color = if (isMuted) Color(0xFFD71921) else Color.White,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = LocalCustomFont.current,
+                        letterSpacing = 0.1.sp
+                    )
+                }
+            }
+
+            // The edge volume indicator line
+            Box(
+                modifier = Modifier
+                    .width(barWidth)
+                    .height(barHeight)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(Color(0x26FFFFFF)),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                // Active Volume Level Line Fill
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(animatedFraction)
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(
+                            if (currentVolume <= minVolume) Color(0x80D71921) else Color.White
+                        )
+                )
             }
         }
     }

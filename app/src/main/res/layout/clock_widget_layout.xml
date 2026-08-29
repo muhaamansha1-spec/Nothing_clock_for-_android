@@ -34,12 +34,12 @@
             android:layout_height="wrap_content"
             android:format12Hour="EEEE, d MMMM"
             android:format24Hour="EEEE, d MMMM"
-            android:textColor="#888888"
+            android:textColor="#B3FFFFFF"
             android:textSize="11sp"
-            android:fontFamily="monospace"
+            android:fontFamily="@font/dotmatrix"
             android:textStyle="bold"
             android:textAllCaps="true"
-            android:letterSpacing="0.2"
+            android:letterSpacing="0.1"
             android:gravity="center" />
 
     </LinearLayout>

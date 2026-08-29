@@ -26,6 +26,13 @@ class ClockWidgetProvider : AppWidgetProvider() {
     companion object {
         const val ACTION_UPDATE_CLOCK = "com.example.clock.UPDATE_WIDGET"
 
+        fun updateAllWidgets(context: Context) {
+            val intent = Intent(context, ClockWidgetProvider::class.java).apply {
+                action = ACTION_UPDATE_CLOCK
+            }
+            context.sendBroadcast(intent)
+        }
+
         fun saveDrawingDots(context: Context, dots: BooleanArray) {
             val stringBuilder = StringBuilder()
             for (dot in dots) {

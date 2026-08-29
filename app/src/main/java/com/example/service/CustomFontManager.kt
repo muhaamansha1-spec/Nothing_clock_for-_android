@@ -1,11 +1,13 @@
 package com.example.service
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.compose.ui.text.font.FontFamily
+import androidx.core.content.res.ResourcesCompat
 import java.io.File
 import java.io.FileOutputStream
 
@@ -38,6 +40,48 @@ object CustomFontManager {
             .edit()
             .putString(KEY_SELECTED_FONT, fontName)
             .apply()
+        
+        // Notify all widgets to update text fonts immediately
+        notifyWidgetsFontChanged(context)
+    }
+
+    fun notifyWidgetsFontChanged(context: Context) {
+        try {
+            com.example.ClockWidgetProvider.updateAllWidgets(context)
+        } catch (_: Throwable) {}
+        try {
+            com.example.AlarmWidgetProvider.updateAllWidgets(context)
+        } catch (_: Throwable) {}
+        try {
+            com.example.WeatherWidgetProvider.updateAllWidgets(context)
+        } catch (_: Throwable) {}
+        try {
+            com.example.MusicWidgetProvider.updateAllWidgets(context)
+        } catch (_: Throwable) {}
+    }
+
+    fun loadTypeface(context: Context, fontName: String? = null): Typeface {
+        val activeName = fontName ?: getSelectedFontName(context)
+        return try {
+            when (activeName) {
+                "NDOT57", "DEFAULT_NDOT" -> {
+                    ResourcesCompat.getFont(context, com.example.R.font.dotmatrix) ?: Typeface.MONOSPACE
+                }
+                "DEFAULT_MONO" -> Typeface.MONOSPACE
+                "DEFAULT_SANS" -> Typeface.SANS_SERIF
+                "DEFAULT_SERIF" -> Typeface.SERIF
+                else -> {
+                    val file = File(getFontDir(context), activeName)
+                    if (file.exists()) {
+                        Typeface.createFromFile(file) ?: (ResourcesCompat.getFont(context, com.example.R.font.dotmatrix) ?: Typeface.MONOSPACE)
+                    } else {
+                        ResourcesCompat.getFont(context, com.example.R.font.dotmatrix) ?: Typeface.MONOSPACE
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            Typeface.MONOSPACE
+        }
     }
 
     fun getFileNameFromUri(context: Context, uri: Uri): String {

@@ -59,7 +59,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/dotmatrix"
                 android:visibility="gone" />
 
             <!-- Spacer -->
@@ -78,7 +78,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="9sp"
                 android:textStyle="bold"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/dotmatrix"
                 android:paddingStart="7dp"
                 android:paddingEnd="7dp"
                 android:paddingTop="2dp"
@@ -105,7 +105,7 @@
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.05"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/dotmatrix"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -116,7 +116,7 @@
                 android:text="68% • 12 KM/H"
                 android:textColor="#66FFFFFF"
                 android:textSize="8sp"
-                android:fontFamily="monospace"
+                android:fontFamily="@font/dotmatrix"
                 android:maxLines="1"
                 android:ellipsize="end" />
         </LinearLayout>
